@@ -107,6 +107,10 @@ const std::vector<float> &SimpleNeuralNetwork::getGenom() {
     return m_vWeights;
 }
 
+void SimpleNeuralNetwork::setGenom(const std::vector<float> &vWeights) {
+    m_vWeights = vWeights;
+}
+
 void SimpleNeuralNetwork::mutateGenom() {
     int nCountOfMutations = std::rand() % m_vWeights.size();
     for (int i = 0; i < nCountOfMutations; i++) {

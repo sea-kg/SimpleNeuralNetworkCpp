@@ -32,6 +32,7 @@ class SimpleNeuralNetwork {
         SimpleNeuralNetwork(const std::vector<int> &vLayers);
         const std::vector<float> &calc(const std::vector<float> &m_vInput);
         const std::vector<float> &getGenom();
+        void setGenom(const std::vector<float> &vWeights);
         void mutateGenom();
         void mixGenom(const std::vector<float> &vWeights);
 

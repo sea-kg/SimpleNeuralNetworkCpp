@@ -1,3 +1,4 @@
+/*
 MIT License
 
 Copyright (c) 2022 Evgenii Sopov (mrseakg@gmail.com)
@@ -19,3 +20,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+
+#ifndef __SIMPLE_NEURAL_NETWORK_H__
+#define __SIMPLE_NEURAL_NETWORK_H__
+
+#include <vector>
+
+class SimpleNeuralNetwork {
+    public:
+        SimpleNeuralNetwork(const std::vector<int> &vLayers);
+        const std::vector<float> &calc(const std::vector<float> &m_vInput);
+        const std::vector<float> &getGenom();
+        void mutateGenom();
+        void mixGenom(const std::vector<float> &vWeights);
+
+    private:
+        float randomWeight();
+        std::vector<int> m_vLayers;
+        std::vector<float> m_vWeights;
+        std::vector<float> m_vBufferOutput;
+        std::vector<float> m_vBufferSignals;
+};
+
+#endif // __SIMPLE_NEURAL_NETWORK_H__

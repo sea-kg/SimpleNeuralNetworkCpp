@@ -1,3 +1,4 @@
+/*
 MIT License
 
 Copyright (c) 2022 Evgenii Sopov (mrseakg@gmail.com)
@@ -19,3 +20,26 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+
+#include <cstdlib>
+#include <iostream>
+#include <ctime>
+
+#include "SimpleNeuralNetwork.h"
+
+int main(int argc, char *argv[]) {
+	std::srand(std::time(nullptr));
+	
+	SimpleNeuralNetwork net({2,100,103,1});
+
+	// const clock_t begin_time = clock();
+
+	float ret = net.calc({10,20})[0];
+	// std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC << std::endl;
+
+
+	std::cout << "ret = " << ret << std::endl;
+
+	return 0;
+}

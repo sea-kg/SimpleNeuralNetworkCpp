@@ -83,6 +83,17 @@ void sort_genoms(std::vector<Genom> &vGenoms) {
 }
 
 int main(int argc, char *argv[]) {
+
+    SimpleNeuralNetwork net2({2,4,4,1});
+    std::vector<float> vGenom = net2.getGenom();
+    for (int i = 0; i < vGenom.size(); ++i) {
+        vGenom[i] = 1.0f;
+    }
+    net2.setGenom(vGenom);
+    float res = net2.calc({10,20})[0];
+    std::cout << res << std::endl;
+    return 0;
+
 	std::srand(std::time(nullptr));
     constexpr size_t nTrainingData = 1000;
     constexpr int nBetterGenoms = 20;

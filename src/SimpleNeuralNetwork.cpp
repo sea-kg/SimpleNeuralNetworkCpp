@@ -108,12 +108,12 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
     }
 
     auto end = std::chrono::steady_clock::now();
-    m_nCalcSumMs = m_nCalcSumMs + std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1000;
+    m_nCalcSumMs = m_nCalcSumMs + std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     m_nCalcCounter++;
     return m_vBufferOutput;
 }
 
-long long SimpleNeuralNetwork::getCalcAvarageTime() {
+long long SimpleNeuralNetwork::getCalcAvarageTimeInNanoseconds() {
     // std::cout
     //     << "m_nCalcSumMs = " << m_nCalcSumMs << std::endl
     //     << "m_nCalcCounter = " << m_nCalcCounter << std::endl

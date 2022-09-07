@@ -180,6 +180,7 @@ int main(int argc, char *argv[]) {
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
             << "ms" << std::endl
         ;
+        std::cout << "calc avarage time: " << net.getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
         // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~1608ms-1615ms
         // dee290c24e67b8bd692ebf91ffe851349d17b5d8: ~2305ms
     }
@@ -191,7 +192,7 @@ int main(int argc, char *argv[]) {
         std::cout << x << " + " << y << " = " << net.calc({x,y})[0] << ", expected (" << int(x+y) << ") " << std::endl;
     }
 
-    std::cout << "calc avarage time: " << net.getCalcAvarageTime() << "ms" << std::endl;
+    std::cout << "calc avarage time: " << net.getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
     // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~22ms
     // dee290c24e67b8bd692ebf91ffe851349d17b5d8: ~22ms
 	return 0;

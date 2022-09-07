@@ -11,8 +11,9 @@ int main() {
     }
     net2.setGenom(vGenom);
     float res = net2.calc({10,20})[0];
-    if (res == 480) {
-        return 0;
+    if (res != 480) {
+        std::cout << "Expected 480, but got " << res << std::endl;
+        return 1;
     }
-    return 1;
+    return 0;
 }

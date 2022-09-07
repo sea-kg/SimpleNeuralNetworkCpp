@@ -165,14 +165,14 @@ int main(int argc, char *argv[]) {
         }
 
         // no need all calculate, enougth from nBetterGenoms in genoms, like code down
-        calc_rating();
+        // calc_rating();
 
-        // // calc rating
-        // for (int nG = nBetterGenoms; nG < vGenoms.size(); nG++) {
-        //     net.setGenom(vGenoms[nG].genom);
-        //     vGenoms[nG].rating = calculate_rating(net, vTrainingData, vGenoms[nG].genom);
-        //     // std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
-        // }
+        // calc rating
+        for (int nG = nBetterGenoms; nG < vGenoms.size(); nG++) {
+            net.setGenom(vGenoms[nG].genom);
+            vGenoms[nG].rating = calculate_rating(net, vTrainingData, vGenoms[nG].genom);
+            // std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
+        }
 
         auto end = std::chrono::steady_clock::now();
         std::cout
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
             << "ms" << std::endl
         ;
-        // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~ 1608ms-1615ms
+        // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~1608ms-1615ms
         // dee290c24e67b8bd692ebf91ffe851349d17b5d8: ~2305ms
     }
 

@@ -27,10 +27,14 @@ SOFTWARE.
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
+#include <chrono>
 
 SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers) 
     : m_vLayers{std::move(vLayers)}
 {
+    m_nCalcSumMs= 0;
+    m_nCalcCounter = 0;
+
     int nInputSize = m_vLayers[0];
     for (int i = 0; i < nInputSize; i++) {
         m_vWeights.push_back(1.0f);
@@ -62,6 +66,7 @@ SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers)
 }
 
 const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vInput) {
+    auto start = std::chrono::steady_clock::now();
     int nOffset = 0;
     int nInputSize = vInput.size();
     for (int i = 0; i < nInputSize; i++) {
@@ -101,7 +106,19 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
         // std::cout << "m_vBufferOutput[" << i << "] = m_vBufferSignals[" << nOutputNumber << "] " << m_vBufferSignals[nOutputNumber] << std::endl;
         m_vBufferOutput[i] = m_vBufferSignals[nOutputNumber];
     }
+
+    auto end = std::chrono::steady_clock::now();
+    m_nCalcSumMs = m_nCalcSumMs + std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1000;
+    m_nCalcCounter++;
     return m_vBufferOutput;
+}
+
+long long SimpleNeuralNetwork::getCalcAvarageTime() {
+    // std::cout
+    //     << "m_nCalcSumMs = " << m_nCalcSumMs << std::endl
+    //     << "m_nCalcCounter = " << m_nCalcCounter << std::endl
+    // ;
+    return m_nCalcSumMs / m_nCalcCounter;
 }
 
 const std::vector<float> &SimpleNeuralNetwork::getGenom() {

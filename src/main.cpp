@@ -26,6 +26,7 @@ SOFTWARE.
 #include <iostream>
 #include <ctime>
 #include <algorithm>
+#include <chrono>
 
 #include "SimpleNeuralNetwork.h"
 
@@ -134,6 +135,8 @@ int main(int argc, char *argv[]) {
     int n = 0;
     while(vGenoms[0].rating > 1.0f && n < nMaxGenerations) {
         ++n;
+
+        auto start = std::chrono::steady_clock::now();
         // better generations will be on the top
         sort_genoms(vGenoms);
         std::cout << " ------- Gen " << n << " ------- " << std::endl;
@@ -141,7 +144,7 @@ int main(int argc, char *argv[]) {
             std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
         }
 
-        assert(nBetterGenoms + nMutateGenoms <= nGenoms);
+        // assert(nBetterGenoms + nMutateGenoms <= nGenoms);
         int nOffset = nBetterGenoms;
         // mutate
         for (int i = 0; i < nMutateGenoms; i++) {
@@ -151,7 +154,7 @@ int main(int argc, char *argv[]) {
             vGenoms[nOffset + i].genom = net.getGenom();
         }
 
-        assert(nBetterGenoms + 2 * nMutateGenoms <= nGenoms);
+        // assert(nBetterGenoms + 2 * nMutateGenoms <= nGenoms);
         nOffset += nMutateGenoms;
         for (int i = 0; i < nMixGenoms; i++) {
             int n0 = std::rand() % nBetterGenoms;
@@ -161,7 +164,24 @@ int main(int argc, char *argv[]) {
             vGenoms[nOffset + i].genom = net.getGenom();
         }
 
+        // no need all calculate, enougth from nBetterGenoms in genoms, like code down
         calc_rating();
+
+        // // calc rating
+        // for (int nG = nBetterGenoms; nG < vGenoms.size(); nG++) {
+        //     net.setGenom(vGenoms[nG].genom);
+        //     vGenoms[nG].rating = calculate_rating(net, vTrainingData, vGenoms[nG].genom);
+        //     // std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
+        // }
+
+        auto end = std::chrono::steady_clock::now();
+        std::cout
+            << "Elapsed time: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+            << "ms" << std::endl
+        ;
+        // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~ 1608ms-1615ms
+        // dee290c24e67b8bd692ebf91ffe851349d17b5d8: ~2305ms
     }
 
     net.setGenom(vGenoms[0].genom);
@@ -170,8 +190,14 @@ int main(int argc, char *argv[]) {
         float y = std::rand() % 100;
         std::cout << x << " + " << y << " = " << net.calc({x,y})[0] << ", expected (" << int(x+y) << ") " << std::endl;
     }
+
+    std::cout << "calc avarage time: " << net.getCalcAvarageTime() << "ms" << std::endl;
+    // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~22ms
+    // dee290c24e67b8bd692ebf91ffe851349d17b5d8: ~22ms
 	return 0;
 }
+
+
 
 /*
 // first run

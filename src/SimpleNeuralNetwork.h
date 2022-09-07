@@ -31,6 +31,7 @@ class SimpleNeuralNetwork {
     public:
         explicit SimpleNeuralNetwork(std::vector<int> vLayers);
         const std::vector<float> &calc(const std::vector<float> &m_vInput);
+        long long getCalcAvarageTime();
         const std::vector<float> &getGenom();
         void setGenom(const std::vector<float> &vWeights);
         void mutateGenom();
@@ -42,6 +43,8 @@ class SimpleNeuralNetwork {
         std::vector<float> m_vWeights{};
         std::vector<float> m_vBufferOutput{};
         std::vector<float> m_vBufferSignals{};
+        long long m_nCalcSumMs;
+        int m_nCalcCounter;
 };
 
 #endif // __SIMPLE_NEURAL_NETWORK_H__

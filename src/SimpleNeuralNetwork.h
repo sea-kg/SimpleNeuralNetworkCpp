@@ -29,7 +29,7 @@ SOFTWARE.
 
 class SimpleNeuralNetwork {
     public:
-        SimpleNeuralNetwork(const std::vector<int> &vLayers);
+        explicit SimpleNeuralNetwork(std::vector<int> vLayers);
         const std::vector<float> &calc(const std::vector<float> &m_vInput);
         const std::vector<float> &getGenom();
         void setGenom(const std::vector<float> &vWeights);
@@ -38,10 +38,10 @@ class SimpleNeuralNetwork {
 
     private:
         float randomWeight();
-        std::vector<int> m_vLayers;
-        std::vector<float> m_vWeights;
-        std::vector<float> m_vBufferOutput;
-        std::vector<float> m_vBufferSignals;
+        const std::vector<int> m_vLayers;
+        std::vector<float> m_vWeights{};
+        std::vector<float> m_vBufferOutput{};
+        std::vector<float> m_vBufferSignals{};
 };
 
 #endif // __SIMPLE_NEURAL_NETWORK_H__

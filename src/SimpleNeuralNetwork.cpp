@@ -28,8 +28,9 @@ SOFTWARE.
 #include <iostream>
 #include <ctime>
 
-SimpleNeuralNetwork::SimpleNeuralNetwork(const std::vector<int> &vLayers) {
-    m_vLayers = vLayers;
+SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers) 
+    : m_vLayers{std::move(vLayers)}
+{
     int nInputSize = m_vLayers[0];
     for (int i = 0; i < nInputSize; i++) {
         m_vWeights.push_back(1.0f);

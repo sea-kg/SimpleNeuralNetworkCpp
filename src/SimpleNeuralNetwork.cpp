@@ -68,37 +68,48 @@ SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers)
 const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vInput) {
     auto start = std::chrono::steady_clock::now();
     int nOffset = 0;
+    float nSum = 0;
     if (m_nInputSize != vInput.size()) {
         throw std::runtime_error("Incorrect input size!");
     }
-    for (int i = 0; i < m_nInputSize; ++i) {
+
+    int i = 0;
+    while(i < m_nInputSize) {
         m_vBufferSignals[i] = vInput[i] * m_vWeights[i];
-        // std::cout << "m_vBufferSignals[" << i << "] = " << m_vBufferSignals[i] << std::endl;
+        ++i;
     }
+
     int nWeightOffset = m_nInputSize;
     int nSignalOffset = 0;
+    int nCounter = 0;
     // std::cout << " ----- " << std::endl;
-    for (int nL = 1; nL < m_nLayersSize; ++nL) {
-        // std::cout << "nL = " << nL << std::endl;
-        int nPrevLayerSize = m_vLayers[nL - 1];
-        int nLayerSize = m_vLayers[nL];
-        for (int nN = 0; nN < nLayerSize; nN++) {
-            float nSum = 0.0;
-            for(int nP = 0; nP < nPrevLayerSize; ++nP) {
-                int nBufferSignalN = nSignalOffset + nP;
-                // std::cout
-                //     << " += {m_vBufferSignals[" << nBufferSignalN << "] " << m_vBufferSignals[nBufferSignalN] << "} " 
-                //     << " * {m_vWeights[" << nWeightOffset << "] = " << m_vWeights[nWeightOffset] << "}"
-                //     << std::endl;
-                
+    int nP;
+    int nN;
+    int nBufferSignalN;
+    int nPrevLayerSize;
+    int nLayerSize;
+    int nBufferNumberOffset;
+
+    int nL = 1;
+    while (nL < m_nLayersSize) {
+        nPrevLayerSize = m_vLayers[nL - 1];
+        nLayerSize = m_vLayers[nL];
+        nBufferNumberOffset = nSignalOffset + nPrevLayerSize;
+        nN = 0;
+        while (nN < nLayerSize) {
+            nSum = 0.0;
+            nP = 0;
+            while (nP < nPrevLayerSize) {
+                nBufferSignalN = nSignalOffset + nP;
                 nSum += m_vBufferSignals[nBufferSignalN] * m_vWeights[nWeightOffset];
                 ++nWeightOffset;
+                ++nP;
             }
-            int nBufferNumber = nSignalOffset + nPrevLayerSize + nN;
-            m_vBufferSignals[nBufferNumber] = nSum;
-            // std::cout << "m_vBufferSignals[" << nBufferNumber << "] = " << nSum << std::endl;
+            m_vBufferSignals[nBufferNumberOffset + nN] = nSum;
+            ++nN;
         }
         nSignalOffset += nPrevLayerSize;
+        ++nL;
     }
 
     

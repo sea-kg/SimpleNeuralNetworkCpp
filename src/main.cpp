@@ -85,10 +85,11 @@ void sort_genoms(std::vector<Genom> &vGenoms) {
 int main(int argc, char *argv[]) {
 	std::srand(std::time(nullptr));
     constexpr size_t nTrainingData = 1000;
-    constexpr int nGenoms = 100;
-    constexpr int nBetterGenoms = 30;
+    constexpr int nBetterGenoms = 20;
     constexpr int nMutateGenoms = 35;
     constexpr int nMixGenoms = 35;
+    constexpr int nGenoms = nBetterGenoms + nMutateGenoms + nMixGenoms;
+
     constexpr int nMaxGenerations = 100;
 
 	SimpleNeuralNetwork net({2,64,64,1});
@@ -133,7 +134,7 @@ int main(int argc, char *argv[]) {
     calc_rating();
     
     int n = 0;
-    while(vGenoms[0].rating > 1.0f && n < nMaxGenerations) {
+    while(vGenoms[0].rating > 0.1f && n < nMaxGenerations) {
         ++n;
 
         auto start = std::chrono::steady_clock::now();
@@ -187,8 +188,8 @@ int main(int argc, char *argv[]) {
 
     net.setGenom(vGenoms[0].genom);
     for (int i = 0; i < 10; i++) {
-        float x = std::rand() % 100;
-        float y = std::rand() % 100;
+        float x = (std::rand() % 200) - 100;
+        float y = (std::rand() % 200) - 100;
         std::cout << x << " + " << y << " = " << net.calc({x,y})[0] << ", expected (" << int(x+y) << ") " << std::endl;
     }
 

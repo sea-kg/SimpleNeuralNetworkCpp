@@ -112,7 +112,6 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
         ++nL;
     }
 
-    
     // this shit very longer then 'for' + '=' +/- (100-300ns)
     // m_vBufferOutput = std::move(std::vector<float>(m_vBufferSignals.end() - m_nOutputSize, m_vBufferSignals.end()));
 
@@ -129,6 +128,7 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
     m_nCalcSumMs = m_nCalcSumMs + std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     ++m_nCalcCounter;
     // 2022-09-08 00:07 - 22732ns
+    // 2022-09-08 01:52 - 2780ns (?)
     return m_vBufferOutput;
 }
 

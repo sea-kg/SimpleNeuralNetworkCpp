@@ -34,13 +34,13 @@ SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers)
 {
     m_nCalcSumMs= 0;
     m_nCalcCounter = 0;
-
-    int nInputSize = m_vLayers[0];
-    for (int i = 0; i < nInputSize; i++) {
+    m_nLayersSize = m_vLayers.size();
+    m_nInputSize = m_vLayers[0];
+    for (int i = 0; i < m_nInputSize; i++) {
         m_vWeights.push_back(1.0f);
     }
 
-    for (int nL = 1; nL < m_vLayers.size(); nL++) {
+    for (int nL = 1; nL < m_nLayersSize; nL++) {
         int nPrevLayerSize = m_vLayers[nL - 1];
         int nLayerSize = m_vLayers[nL];
         for (int nN = 0; nN < nPrevLayerSize; nN++) {
@@ -53,8 +53,8 @@ SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers)
         }
     }
 
-    int nOutputSize = m_vLayers[m_vLayers.size()-1];
-    for (int i = 0; i < nOutputSize; i++) {
+    m_nOutputSize = m_vLayers[m_nLayersSize-1];
+    for (int i = 0; i < m_nOutputSize; i++) {
         m_vBufferOutput.push_back(0.0f);
         m_vBufferSignals.push_back(0.0f);
     }
@@ -68,21 +68,23 @@ SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers)
 const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vInput) {
     auto start = std::chrono::steady_clock::now();
     int nOffset = 0;
-    int nInputSize = vInput.size();
-    for (int i = 0; i < nInputSize; i++) {
+    if (m_nInputSize != vInput.size()) {
+        throw std::runtime_error("Incorrect input size!");
+    }
+    for (int i = 0; i < m_nInputSize; ++i) {
         m_vBufferSignals[i] = vInput[i] * m_vWeights[i];
         // std::cout << "m_vBufferSignals[" << i << "] = " << m_vBufferSignals[i] << std::endl;
     }
-    int nWeightOffset = nInputSize;
+    int nWeightOffset = m_nInputSize;
     int nSignalOffset = 0;
     // std::cout << " ----- " << std::endl;
-    for (int nL = 1; nL < m_vLayers.size(); nL++) {
+    for (int nL = 1; nL < m_nLayersSize; ++nL) {
         // std::cout << "nL = " << nL << std::endl;
         int nPrevLayerSize = m_vLayers[nL - 1];
         int nLayerSize = m_vLayers[nL];
         for (int nN = 0; nN < nLayerSize; nN++) {
             float nSum = 0.0;
-            for(int nP = 0; nP < nPrevLayerSize; nP++) {
+            for(int nP = 0; nP < nPrevLayerSize; ++nP) {
                 int nBufferSignalN = nSignalOffset + nP;
                 // std::cout
                 //     << " += {m_vBufferSignals[" << nBufferSignalN << "] " << m_vBufferSignals[nBufferSignalN] << "} " 
@@ -90,7 +92,7 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
                 //     << std::endl;
                 
                 nSum += m_vBufferSignals[nBufferSignalN] * m_vWeights[nWeightOffset];
-                nWeightOffset++;
+                ++nWeightOffset;
             }
             int nBufferNumber = nSignalOffset + nPrevLayerSize + nN;
             m_vBufferSignals[nBufferNumber] = nSum;
@@ -99,9 +101,14 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
         nSignalOffset += nPrevLayerSize;
     }
 
-    int nOutputSize = m_vLayers[m_vLayers.size() -1] - 1;
+    
+    // this shit very longer then 'for' + '=' +/- (100-300ns)
+    // m_vBufferOutput = std::move(std::vector<float>(m_vBufferSignals.end() - m_nOutputSize, m_vBufferSignals.end()));
+
+    // this fate
+    int nOutputSize = m_nOutputSize - 1;
     int nSignalsLast = m_vBufferSignals.size() - 1;
-    for (int i = 0; i <= nOutputSize; i++) {
+    for (int i = 0; i <= nOutputSize; ++i) {
         int nOutputNumber = nSignalsLast - nOutputSize + i;
         // std::cout << "m_vBufferOutput[" << i << "] = m_vBufferSignals[" << nOutputNumber << "] " << m_vBufferSignals[nOutputNumber] << std::endl;
         m_vBufferOutput[i] = m_vBufferSignals[nOutputNumber];
@@ -109,7 +116,8 @@ const std::vector<float> &SimpleNeuralNetwork::calc(const std::vector<float> &vI
 
     auto end = std::chrono::steady_clock::now();
     m_nCalcSumMs = m_nCalcSumMs + std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    m_nCalcCounter++;
+    ++m_nCalcCounter;
+    // 2022-09-08 00:07 - 22732ns
     return m_vBufferOutput;
 }
 

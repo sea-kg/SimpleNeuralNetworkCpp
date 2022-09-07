@@ -45,6 +45,9 @@ class SimpleNeuralNetwork {
         std::vector<float> m_vBufferSignals{};
         long long m_nCalcSumMs;
         int m_nCalcCounter;
+        int m_nInputSize;
+        int m_nLayersSize;
+        int m_nOutputSize;
 };
 
 #endif // __SIMPLE_NEURAL_NETWORK_H__

@@ -65,7 +65,7 @@ float calculate_rating(
 
 void sort_genoms(std::vector<Genom> &vGenoms) {
     struct {
-        bool operator()(Genom a, Genom b) const { return a.rating < b.rating; }
+        bool operator()(const Genom &a, const Genom &b) const { return a.rating < b.rating; }
     } customLess;
     std::sort(vGenoms.begin(), vGenoms.end(), customLess);
 }

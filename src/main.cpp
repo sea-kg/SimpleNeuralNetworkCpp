@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <cstdlib>
+#include <stdint.h>
 #include <iostream>
 #include <ctime>
 #include <algorithm>
@@ -30,14 +30,23 @@ SOFTWARE.
 #include "SimpleNeuralNetwork.h"
 
 struct Genom {
+    explicit Genom(std::vector<float> genom, float rating)
+        : genom{std::move(genom)}
+        , rating{std::move(rating)}
+    {}
     std::vector<float> genom;
     float rating;
 };
 
 struct TrainingItem {
-    float in0;
-    float in1;
-    float out0;
+    explicit TrainingItem(float in0, float in1, float out0)
+        : in0{std::move(in0)}
+        , in1{std::move(in1)}
+        , out0{std::move(out0)}
+        {};
+    const float in0;
+    const float in1;
+    const float out0;
 };
 
 
@@ -64,55 +73,67 @@ float calculate_rating(
 }
 
 void sort_genoms(std::vector<Genom> &vGenoms) {
-    struct {
-        bool operator()(const Genom &a, const Genom &b) const { return a.rating < b.rating; }
-    } customLess;
-    std::sort(vGenoms.begin(), vGenoms.end(), customLess);
+    std::sort(
+        vGenoms.begin(), 
+        vGenoms.end(), 
+        [](const Genom &a, const Genom &b) { 
+            return a.rating < b.rating; 
+        });
 }
 
 int main(int argc, char *argv[]) {
 	std::srand(std::time(nullptr));
-    int nTrainingData = 1000;
-    int nGenoms = 100;
-    int nBetterGenoms = 30;
-    int nMutateGenoms = 35;
-    int nMixGenoms = 35;
-    int nMaxGenerations = 100;
+    constexpr size_t nTrainingData = 1000;
+    constexpr int nGenoms = 100;
+    constexpr int nBetterGenoms = 30;
+    constexpr int nMutateGenoms = 35;
+    constexpr int nMixGenoms = 35;
+    constexpr int nMaxGenerations = 100;
 
 	SimpleNeuralNetwork net({2,64,64,1});
 
     // genetic algoritm
 
     // init training data
-    std::vector<TrainingItem> vTrainingData;
-    for (int i = 0; i < nTrainingData; i++) {
-        TrainingItem item;
-        item.in0 = std::rand() % 100;
-        item.in1 = std::rand() % 100;
-        item.out0 = item.in0 + item.in1;
-        vTrainingData.push_back(item);
-    }
+    const auto vTrainingData = [](const size_t size){
+        std::vector<TrainingItem> result;
+        result.reserve(size);
+
+        static const auto get_random_int = []{
+            return static_cast<float>(std::rand() % 100);
+        };
+        
+        for (int i = 0; i < size; ++i) {
+            float in0 = get_random_int();
+            float in1 = get_random_int();
+            float out = in0 + in1;
+            result.emplace_back(in0, in1, out);
+        }
+
+        return result;
+    }(nTrainingData);
 
     // init first generation
     std::vector<Genom> vGenoms;
-    for (int i = 0; i < nGenoms; i++) {
+    vGenoms.reserve(nGenoms);
+    for (int i = 0; i < nGenoms; ++i) {
         net.mutateGenom();
-        Genom gen;
-        gen.genom = net.getGenom();
-        gen.rating = 100000.0f;
-        vGenoms.push_back(gen);
+        vGenoms.emplace_back(net.getGenom(), 100000.0f);
     }
 
-    // calc rating
-    for (int nG = 0; nG < vGenoms.size(); nG++) {
-        net.setGenom(vGenoms[nG].genom);
-        vGenoms[nG].rating = calculate_rating(net, vTrainingData, vGenoms[nG].genom);
-        // std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
-    }
+    const auto calc_rating = [&]() {
+        for (auto & g : vGenoms) {
+            net.setGenom(g.genom);
+            g.rating = calculate_rating(net, vTrainingData, g.genom);
+            // static int count = 0;
+            // std::cout << "vGenoms[" << count++ << "].rating = " << g.rating << std::endl;
+        }
+    };
+    calc_rating();
     
     int n = 0;
     while(vGenoms[0].rating > 1.0f && n < nMaxGenerations) {
-        n += 1;
+        ++n;
         // better generations will be on the top
         sort_genoms(vGenoms);
         std::cout << " ------- Gen " << n << " ------- " << std::endl;
@@ -120,6 +141,7 @@ int main(int argc, char *argv[]) {
             std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
         }
 
+        assert(nBetterGenoms + nMutateGenoms <= nGenoms);
         int nOffset = nBetterGenoms;
         // mutate
         for (int i = 0; i < nMutateGenoms; i++) {
@@ -129,6 +151,7 @@ int main(int argc, char *argv[]) {
             vGenoms[nOffset + i].genom = net.getGenom();
         }
 
+        assert(nBetterGenoms + 2 * nMutateGenoms <= nGenoms);
         nOffset += nMutateGenoms;
         for (int i = 0; i < nMixGenoms; i++) {
             int n0 = std::rand() % nBetterGenoms;
@@ -138,12 +161,7 @@ int main(int argc, char *argv[]) {
             vGenoms[nOffset + i].genom = net.getGenom();
         }
 
-        // calc rating
-        for (int nG = nBetterGenoms; nG < vGenoms.size(); nG++) {
-            net.setGenom(vGenoms[nG].genom);
-            vGenoms[nG].rating = calculate_rating(net, vTrainingData, vGenoms[nG].genom);
-            // std::cout << "vGenoms[" << nG << "].rating = " << vGenoms[nG].rating << std::endl;
-        }
+        calc_rating();
     }
 
     net.setGenom(vGenoms[0].genom);

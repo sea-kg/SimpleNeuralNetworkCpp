@@ -173,6 +173,68 @@ float SimpleNeuralNetwork::randomWeight() {
 }
 
 // ---------------------------------------------------------------------
+// SimpleNeuralTrainingItem
+
+SimpleNeuralTrainingItem::SimpleNeuralTrainingItem(const std::vector<float> vIn, const std::vector<float> vOut) 
+    : m_vIn{std::move(vIn)}
+    , m_vOut{std::move(vOut)}
+
+{
+    // nothing
+}
+
+const std::vector<float> &SimpleNeuralTrainingItem::getIn() const {
+    return m_vIn;
+}
+
+const std::vector<float> &SimpleNeuralTrainingItem::getOut() const {
+    return m_vOut;
+}
+
+// ---------------------------------------------------------------------
+// SimpleNeuralTrainingItemList
+
+SimpleNeuralTrainingItemList::SimpleNeuralTrainingItemList(int nNumberOfIn, int nNumberOfOut) 
+    : m_nNumberOfIn(nNumberOfIn)
+    , m_nNumberOfOut(nNumberOfOut)
+{
+
+}
+
+int SimpleNeuralTrainingItemList::getNumberOfIn() const {
+    return m_nNumberOfIn;
+}
+
+int SimpleNeuralTrainingItemList::getNumberOfOut() const {
+    return m_nNumberOfOut;
+}
+
+void SimpleNeuralTrainingItemList::addItem(std::vector<float> vIn, std::vector<float> vOut) {
+    if (vIn.size() != m_nNumberOfIn) {
+        std::cerr << "[SimpleNeuralTrainingItemList::addItem] Wrong number of in elements" << std::endl;
+        return;
+    }
+    if (vOut.size() != m_nNumberOfOut) {
+        std::cerr << "[SimpleNeuralTrainingItemList::addItem] Wrong number of out elements" << std::endl;
+        return;
+    }
+    m_vData.emplace_back(vIn, vOut);
+}
+
+unsigned int SimpleNeuralTrainingItemList::size() const {
+    return m_vData.size();
+}
+
+std::vector<SimpleNeuralTrainingItem>::iterator SimpleNeuralTrainingItemList::begin() {
+    return m_vData.begin();
+}
+
+std::vector<SimpleNeuralTrainingItem>::iterator SimpleNeuralTrainingItemList::end() {
+    return m_vData.end();
+}
+
+
+// ---------------------------------------------------------------------
 // SimpleNeuralGenom
 
 
@@ -202,6 +264,26 @@ void SimpleNeuralGenom::addRating(float nDiff) {
 
 void SimpleNeuralGenom::setRating(float nRating) {
     m_nRating = nRating;
+}
+
+void SimpleNeuralGenom::calculateRating(SimpleNeuralNetwork *pNet, SimpleNeuralTrainingItemList *pTrainingData) {
+    float nSumDiffs = 0.0f;
+    pNet->setGenom(m_vGenom);
+    std::vector<SimpleNeuralTrainingItem>::iterator it;
+    for (it = pTrainingData->begin(); it != pTrainingData->end(); ++it) {
+        float ret = pNet->calc(it->getIn())[0];
+        float nOut = it->getOut()[0];
+        if (ret < nOut) {
+            ret = nOut - ret;
+        } else {
+            ret = ret - nOut;
+        }
+        if (ret < 0) {
+            ret *= -1;
+        }
+        nSumDiffs += ret;
+    }
+    m_nRating = nSumDiffs / float(pTrainingData->size());
 }
 
 // ---------------------------------------------------------------------
@@ -268,77 +350,25 @@ void SimpleNeuralGenomList::mutateAndMix(SimpleNeuralNetwork *pNet) {
     }
 }
 
-std::vector<SimpleNeuralGenom>::iterator SimpleNeuralGenomList::beginRecalc() {
-    return m_vGenoms.begin() + m_nBetterGenoms;
-}
-
-std::vector<SimpleNeuralGenom>::iterator SimpleNeuralGenomList::end() {
-    return m_vGenoms.end();
-}
-
-
 const SimpleNeuralGenom &SimpleNeuralGenomList::getBetterGenom() {
     this->sort();
     return m_vGenoms[0];
 }
 
-// ---------------------------------------------------------------------
-// SimpleNeuralTrainingItem
-
-SimpleNeuralTrainingItem::SimpleNeuralTrainingItem(const std::vector<float> vIn, const std::vector<float> vOut) 
-    : m_vIn{std::move(vIn)}
-    , m_vOut{std::move(vOut)}
-
-{
-    // nothing
-}
-
-const std::vector<float> &SimpleNeuralTrainingItem::getIn() const {
-    return m_vIn;
-}
-
-const std::vector<float> &SimpleNeuralTrainingItem::getOut() const {
-    return m_vOut;
-}
-
-// ---------------------------------------------------------------------
-// SimpleNeuralTrainingItemList
-
-SimpleNeuralTrainingItemList::SimpleNeuralTrainingItemList(int nNumberOfIn, int nNumberOfOut) 
-    : m_nNumberOfIn(nNumberOfIn)
-    , m_nNumberOfOut(nNumberOfOut)
-{
-
-}
-
-int SimpleNeuralTrainingItemList::getNumberOfIn() const {
-    return m_nNumberOfIn;
-}
-
-int SimpleNeuralTrainingItemList::getNumberOfOut() const {
-    return m_nNumberOfOut;
-}
-
-void SimpleNeuralTrainingItemList::addItem(std::vector<float> vIn, std::vector<float> vOut) {
-    if (vIn.size() != m_nNumberOfIn) {
-        std::cerr << "[SimpleNeuralTrainingItemList::addItem] Wrong number of in elements" << std::endl;
-        return;
+void SimpleNeuralGenomList::calculateRatingForAll(
+    SimpleNeuralNetwork *pNet,
+    SimpleNeuralTrainingItemList *pTrainingData
+) {
+    for (auto it = m_vGenoms.begin(); it != m_vGenoms.end(); ++it) {
+        it->calculateRating(pNet, pTrainingData);
     }
-    if (vOut.size() != m_nNumberOfOut) {
-        std::cerr << "[SimpleNeuralTrainingItemList::addItem] Wrong number of out elements" << std::endl;
-        return;
+}
+
+void SimpleNeuralGenomList::calculateRatingForMutatedAndMixed(
+    SimpleNeuralNetwork *pNet,
+    SimpleNeuralTrainingItemList *pTrainingData
+) {
+    for (auto it = m_vGenoms.begin() + m_nBetterGenoms; it != m_vGenoms.end(); ++it) {
+        it->calculateRating(pNet, pTrainingData);
     }
-    m_vData.emplace_back(vIn, vOut);
-}
-
-unsigned int SimpleNeuralTrainingItemList::size() const {
-    return m_vData.size();
-}
-
-std::vector<SimpleNeuralTrainingItem>::iterator SimpleNeuralTrainingItemList::begin() {
-    return m_vData.begin();
-}
-
-std::vector<SimpleNeuralTrainingItem>::iterator SimpleNeuralTrainingItemList::end() {
-    return m_vData.end();
 }

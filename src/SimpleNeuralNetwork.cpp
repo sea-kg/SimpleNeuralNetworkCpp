@@ -28,6 +28,10 @@ SOFTWARE.
 #include <iostream>
 #include <ctime>
 #include <chrono>
+#include <algorithm>
+
+// ---------------------------------------------------------------------
+// SimpleNeuralNetwork
 
 SimpleNeuralNetwork::SimpleNeuralNetwork(std::vector<int> vLayers) 
     : m_vLayers{std::move(vLayers)}
@@ -166,4 +170,114 @@ void SimpleNeuralNetwork::mixGenom(const std::vector<float> &vWeights) {
 
 float SimpleNeuralNetwork::randomWeight() {
     return float((std::rand() % 200) - 100) / 100.0f;
+}
+
+// ---------------------------------------------------------------------
+// SimpleNeuralGenom
+
+
+SimpleNeuralGenom::SimpleNeuralGenom(std::vector<float> vGenom, float nRating)
+    : m_vGenom{std::move(vGenom)}
+    , m_nRating{std::move(nRating)}
+{
+
+}
+
+const std::vector<float> &SimpleNeuralGenom::getGenom() const {
+    return m_vGenom;
+}
+
+void SimpleNeuralGenom::setGenom(const std::vector<float> &vGenom) {
+    m_vGenom = vGenom;
+}
+
+float SimpleNeuralGenom::getRating() const {
+    return m_nRating;
+}
+
+
+void SimpleNeuralGenom::addRating(float nDiff) {
+    m_nRating += nDiff;
+}
+
+void SimpleNeuralGenom::setRating(float nRating) {
+    m_nRating = nRating;
+}
+
+// ---------------------------------------------------------------------
+// SimpleNeuralGenomList
+
+SimpleNeuralGenomList::SimpleNeuralGenomList(int nBetterGenoms, int nMutateGenoms, int nMixGenoms) 
+    : m_nBetterGenoms(nBetterGenoms)
+    , m_nMutateGenoms(nMutateGenoms)
+    , m_nMixGenoms(nMixGenoms)
+    , m_nAllGenoms(m_nBetterGenoms + m_nMutateGenoms + m_nMixGenoms)
+{
+    m_vGenoms.reserve(m_nAllGenoms);
+}
+
+void SimpleNeuralGenomList::fillRandom(SimpleNeuralNetwork *pNet) {
+    for (int i = 0; i < m_nAllGenoms; ++i) {
+        pNet->mutateGenom();
+        m_vGenoms.emplace_back(pNet->getGenom(), 100000.0f);
+    }
+}
+
+std::vector<SimpleNeuralGenom> &SimpleNeuralGenomList::list() {
+    return m_vGenoms;
+}
+
+float SimpleNeuralGenomList::getBetterRating() {
+    return m_vGenoms[0].getRating();
+}
+
+void SimpleNeuralGenomList::sort() {
+    std::sort(
+        m_vGenoms.begin(), 
+        m_vGenoms.end(), 
+        [](const SimpleNeuralGenom &a, const SimpleNeuralGenom &b) { 
+            return a.getRating() < b.getRating(); 
+        });
+}
+
+void SimpleNeuralGenomList::printFirstRatings(int nNumber) {
+    for (int nG = 0; nG < nNumber; nG++) {
+        std::cout << "genom[" << nG << "].rating = " << m_vGenoms[nG].getRating() << std::endl;
+    }
+}
+
+void SimpleNeuralGenomList::mutateAndMix(SimpleNeuralNetwork *pNet) {
+    // assert(nBetterGenoms + nMutateGenoms <= nGenoms);
+    int nOffset = m_nBetterGenoms;
+    // mutate
+    for (int i = 0; i < m_nMutateGenoms; i++) {
+        int n0 = std::rand() % m_nBetterGenoms;
+        pNet->setGenom(m_vGenoms[n0].getGenom());
+        pNet->mutateGenom();
+        m_vGenoms[nOffset + i].setGenom(pNet->getGenom());
+    }
+
+    // assert(nBetterGenoms + 2 * nMutateGenoms <= nGenoms);
+    nOffset += m_nMutateGenoms;
+    for (int i = 0; i < m_nMixGenoms; i++) {
+        int n0 = std::rand() % m_nBetterGenoms;
+        int n1 = std::rand() % m_nBetterGenoms;
+        pNet->setGenom(m_vGenoms[n0].getGenom());
+        pNet->mixGenom(m_vGenoms[n1].getGenom());
+        m_vGenoms[nOffset + i].setGenom(pNet->getGenom());
+    }
+}
+
+std::vector<SimpleNeuralGenom>::iterator SimpleNeuralGenomList::beginRecalc() {
+    return m_vGenoms.begin() + m_nBetterGenoms;
+}
+
+std::vector<SimpleNeuralGenom>::iterator SimpleNeuralGenomList::end() {
+    return m_vGenoms.end();
+}
+
+
+const SimpleNeuralGenom &SimpleNeuralGenomList::getBetterGenom() {
+    this->sort();
+    return m_vGenoms[0];
 }

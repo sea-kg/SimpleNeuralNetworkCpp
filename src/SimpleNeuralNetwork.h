@@ -50,4 +50,45 @@ class SimpleNeuralNetwork {
         int m_nOutputSize;
 };
 
+class SimpleNeuralGenom {
+    public:
+        explicit SimpleNeuralGenom(std::vector<float> vGenom, float nRating);
+
+        const std::vector<float> &getGenom() const;
+        void setGenom(const std::vector<float> &vGenom);
+
+        float getRating() const;
+        void addRating(float nDiff);
+        void setRating(float nRating);
+    private:
+        float m_nRating;
+        std::vector<float> m_vGenom;
+};
+
+
+class SimpleNeuralGenomList {
+    public:
+        SimpleNeuralGenomList(int nBetter, int nMutate, int nMix);
+        void fillRandom(SimpleNeuralNetwork *pNet);
+
+        std::vector<SimpleNeuralGenom> &list();
+        float getBetterRating();
+        void sort();
+        void printFirstRatings(int nNumber);
+        void mutateAndMix(SimpleNeuralNetwork *pNet);
+        
+        std::vector<SimpleNeuralGenom>::iterator beginRecalc();
+        std::vector<SimpleNeuralGenom>::iterator end();
+
+        const SimpleNeuralGenom &getBetterGenom();
+
+    private:
+        int m_nBetterGenoms;
+        int m_nMutateGenoms;
+        int m_nMixGenoms;
+        int m_nAllGenoms;
+        
+        std::vector<SimpleNeuralGenom> m_vGenoms;
+};
+
 #endif // __SIMPLE_NEURAL_NETWORK_H__

@@ -91,4 +91,33 @@ class SimpleNeuralGenomList {
         std::vector<SimpleNeuralGenom> m_vGenoms;
 };
 
+class SimpleNeuralTrainingItem {
+    public:
+        explicit SimpleNeuralTrainingItem(const std::vector<float> in, const std::vector<float> out);
+
+        const std::vector<float> &getIn() const;
+        const std::vector<float> &getOut() const;
+
+    private:
+        const std::vector<float> m_vIn;
+        const std::vector<float> m_vOut;
+};
+
+class SimpleNeuralTrainingItemList {
+    public:
+        SimpleNeuralTrainingItemList(int nNumberOfIn, int nNumberOfOut);
+
+        int getNumberOfIn() const;
+        int getNumberOfOut() const;
+        void addItem(std::vector<float> in, std::vector<float> out);
+        unsigned int size() const;
+        std::vector<SimpleNeuralTrainingItem>::iterator begin();
+        std::vector<SimpleNeuralTrainingItem>::iterator end();
+
+    private:
+        int m_nNumberOfIn;
+        int m_nNumberOfOut;
+        std::vector<SimpleNeuralTrainingItem> m_vData;
+};
+
 #endif // __SIMPLE_NEURAL_NETWORK_H__

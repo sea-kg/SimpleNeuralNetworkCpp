@@ -281,3 +281,64 @@ const SimpleNeuralGenom &SimpleNeuralGenomList::getBetterGenom() {
     this->sort();
     return m_vGenoms[0];
 }
+
+// ---------------------------------------------------------------------
+// SimpleNeuralTrainingItem
+
+SimpleNeuralTrainingItem::SimpleNeuralTrainingItem(const std::vector<float> vIn, const std::vector<float> vOut) 
+    : m_vIn{std::move(vIn)}
+    , m_vOut{std::move(vOut)}
+
+{
+    // nothing
+}
+
+const std::vector<float> &SimpleNeuralTrainingItem::getIn() const {
+    return m_vIn;
+}
+
+const std::vector<float> &SimpleNeuralTrainingItem::getOut() const {
+    return m_vOut;
+}
+
+// ---------------------------------------------------------------------
+// SimpleNeuralTrainingItemList
+
+SimpleNeuralTrainingItemList::SimpleNeuralTrainingItemList(int nNumberOfIn, int nNumberOfOut) 
+    : m_nNumberOfIn(nNumberOfIn)
+    , m_nNumberOfOut(nNumberOfOut)
+{
+
+}
+
+int SimpleNeuralTrainingItemList::getNumberOfIn() const {
+    return m_nNumberOfIn;
+}
+
+int SimpleNeuralTrainingItemList::getNumberOfOut() const {
+    return m_nNumberOfOut;
+}
+
+void SimpleNeuralTrainingItemList::addItem(std::vector<float> vIn, std::vector<float> vOut) {
+    if (vIn.size() != m_nNumberOfIn) {
+        std::cerr << "[SimpleNeuralTrainingItemList::addItem] Wrong number of in elements" << std::endl;
+        return;
+    }
+    if (vOut.size() != m_nNumberOfOut) {
+        std::cerr << "[SimpleNeuralTrainingItemList::addItem] Wrong number of out elements" << std::endl;
+        return;
+    }
+    m_vData.emplace_back(vIn, vOut);
+}
+
+unsigned int SimpleNeuralTrainingItemList::size() const {
+    return m_vData.size();
+}
+
+std::vector<SimpleNeuralTrainingItem>::iterator SimpleNeuralTrainingItemList::begin() {
+    return m_vData.begin();
+}
+
+std::vector<SimpleNeuralTrainingItem>::iterator SimpleNeuralTrainingItemList::end() {
+    return m_vData.end();
+}

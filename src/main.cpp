@@ -30,69 +30,54 @@ SOFTWARE.
 
 #include "SimpleNeuralNetwork.h"
 
-struct TrainingItem {
-    explicit TrainingItem(float in0, float in1, float out0)
-        : in0{std::move(in0)}
-        , in1{std::move(in1)}
-        , out0{std::move(out0)}
-        {};
-    const float in0;
-    const float in1;
-    const float out0;
-};
-
-
 float calculate_rating(
     SimpleNeuralNetwork &net,
-    const std::vector<TrainingItem> &vTrainingData,
+    SimpleNeuralTrainingItemList &trainingData,
     const std::vector<float> &vGenom
 ) {
     float nSumDiffs = 0.0f;
-    for (int i = 0; i < vTrainingData.size(); i++) {
-        TrainingItem item = vTrainingData[i];
-        float ret = net.calc({item.in0,item.in1})[0];
-        if (ret < item.out0) {
-            ret = item.out0 - ret;
+    std::vector<SimpleNeuralTrainingItem>::iterator it;
+    for (it = trainingData.begin(); it != trainingData.end(); ++it) {
+        float ret = net.calc(it->getIn())[0];
+        float nOut = it->getOut()[0];
+        if (ret < nOut) {
+            ret = nOut - ret;
         } else {
-            ret = ret - item.out0;
+            ret = ret - nOut;
         }
         if (ret < 0) {
             ret *= -1;
         }
         nSumDiffs += ret;
     }
-    return nSumDiffs / vTrainingData.size();
+    return nSumDiffs / float(trainingData.size());
+}
+
+void initTrainingData(SimpleNeuralTrainingItemList &trainingData, int nTrainingData) {
+    // init training data
+    for (int i = 0; i < nTrainingData; ++i) {
+        float in0 = static_cast<float>(std::rand() % 100);
+        float in1 = static_cast<float>(std::rand() % 100);
+        float out = in0 + in1;
+        trainingData.addItem({in0, in1}, {out});
+    }
 }
 
 int main(int argc, char *argv[]) {
 
 	std::srand(std::time(nullptr));
-    constexpr size_t nTrainingData = 1000;
+    
 
-    constexpr int nMaxGenerations = 100;
+    SimpleNeuralTrainingItemList trainingData(2,1);
+    
+    constexpr size_t nTrainingDataSize = 1000;
+    initTrainingData(trainingData, nTrainingDataSize);
 
-	SimpleNeuralNetwork net({2,64,64,1});
-
-    // genetic algoritm
-
-    // init training data
-    const auto vTrainingData = [](const size_t size){
-        std::vector<TrainingItem> result;
-        result.reserve(size);
-
-        static const auto get_random_int = []{
-            return static_cast<float>(std::rand() % 100);
-        };
-        
-        for (int i = 0; i < size; ++i) {
-            float in0 = get_random_int();
-            float in1 = get_random_int();
-            float out = in0 + in1;
-            result.emplace_back(in0, in1, out);
-        }
-
-        return result;
-    }(nTrainingData);
+	SimpleNeuralNetwork net({
+        trainingData.getNumberOfIn(),
+        64,64, // middle layers
+        trainingData.getNumberOfOut()
+    });
 
     // init first generation
     SimpleNeuralGenomList genoms(30,35,35);
@@ -101,26 +86,24 @@ int main(int argc, char *argv[]) {
     const auto calc_rating = [&]() {
         for (auto & g : genoms.list()) {
             net.setGenom(g.getGenom());
-            g.setRating(calculate_rating(net, vTrainingData, g.getGenom()));
+            g.setRating(calculate_rating(net, trainingData, g.getGenom()));
             // static int count = 0;
             // std::cout << "vGenoms[" << count++ << "].rating = " << g.rating << std::endl;
         }
     };
     calc_rating();
-    
+
+    constexpr int nMaxGenerations = 100;    
+    constexpr float nConditionRatingStop = 0.1f;
     int n = 0;
-    while (genoms.getBetterRating() > 0.1f && n < nMaxGenerations) {
+    while (genoms.getBetterRating() > nConditionRatingStop && n < nMaxGenerations) {
         ++n;
 
         auto start = std::chrono::steady_clock::now();
-        // better generations will be on the top
-        genoms.sort();
+        genoms.sort(); // better generations will be on the top
 
-        
-
-        std::cout << " ------- Gen " << n << " ------- " << std::endl;
+        std::cout << " ------- Generation " << n << " ------- " << std::endl;
         genoms.printFirstRatings(3);
-
         genoms.mutateAndMix(&net);
 
         // no need all calculate, enougth from nBetterGenoms in genoms, like code down
@@ -129,7 +112,7 @@ int main(int argc, char *argv[]) {
         // calc rating
         for (auto it = genoms.beginRecalc(); it != genoms.end(); ++it) {
             net.setGenom(it->getGenom());
-            it->setRating(calculate_rating(net, vTrainingData, it->getGenom()));
+            it->setRating(calculate_rating(net, trainingData, it->getGenom()));
         }
 
         auto end = std::chrono::steady_clock::now();

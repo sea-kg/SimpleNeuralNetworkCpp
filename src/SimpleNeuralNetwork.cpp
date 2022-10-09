@@ -29,6 +29,7 @@ SOFTWARE.
 #include <ctime>
 #include <chrono>
 #include <algorithm>
+#include <math.h>
 
 // ---------------------------------------------------------------------
 // SimpleNeuralNetwork
@@ -271,16 +272,15 @@ void SimpleNeuralGenom::calculateRating(SimpleNeuralNetwork *pNet, SimpleNeuralT
     pNet->setGenom(m_vGenom);
     std::vector<SimpleNeuralTrainingItem>::iterator it;
     for (it = pTrainingData->begin(); it != pTrainingData->end(); ++it) {
-        float ret = pNet->calc(it->getIn())[0];
-        float nOut = it->getOut()[0];
-        if (ret < nOut) {
-            ret = nOut - ret;
-        } else {
-            ret = ret - nOut;
+        std::vector<float> vOutNet = pNet->calc(it->getIn());
+        std::vector<float> vOutExpected = it->getOut();
+        float ret = 0;
+        for (int i = 0; i < vOutNet.size(); i++) {
+            float x1 = vOutNet[i];
+            float x2 = vOutExpected[i];
+            ret += (x2 - x1)*(x2 - x1);
         }
-        if (ret < 0) {
-            ret *= -1;
-        }
+        ret = std::sqrt(ret);
         nSumDiffs += ret;
     }
     m_nRating = nSumDiffs / float(pTrainingData->size());

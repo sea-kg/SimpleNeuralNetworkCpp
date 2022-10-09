@@ -23,4 +23,5 @@ add_subdirectory(tests)
 
 # examples
 add_subdirectory(examples/sum_numbers)
+add_subdirectory(examples/car_learning)
  

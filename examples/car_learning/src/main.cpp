@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
 	SimpleNeuralNetwork *pNet = new SimpleNeuralNetwork({
         trainingData.getNumberOfIn(),
-        64,64, // middle layers
+        64, 128, 64, // middle layers
         // 64, 10, 64, // middle layers
         trainingData.getNumberOfOut()
     });
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     genoms.calculateRatingForAll(pNet, &trainingData);
 
     constexpr int nMaxGenerations = 1500;
-    constexpr float nConditionRatingStop = 2f;
+    constexpr float nConditionRatingStop = 2.0f;
     int n = 0;
     while (genoms.getBetterRating() > nConditionRatingStop && n < nMaxGenerations) {
         ++n;

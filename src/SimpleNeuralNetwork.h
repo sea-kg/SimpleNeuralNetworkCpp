@@ -104,7 +104,7 @@ class SimpleNeuralGenomList {
         SimpleNeuralGenomList(int nBetter, int nMutate, int nMix);
         void fillRandom(SimpleNeuralNetwork *pNet);
 
-        std::vector<SimpleNeuralGenom> &list();
+        const std::vector<SimpleNeuralGenom> &list() const;
         float getBetterRating();
         void sort();
         void printFirstRatings(int nNumber);

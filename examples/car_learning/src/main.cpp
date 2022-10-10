@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
 	SimpleNeuralNetwork *pNet = new SimpleNeuralNetwork({
         trainingData.getNumberOfIn(),
         64,64, // middle layers
+        // 64, 10, 64, // middle layers
         trainingData.getNumberOfOut()
     });
 
@@ -77,8 +78,8 @@ int main(int argc, char *argv[]) {
     genoms.fillRandom(pNet); // TODO fill can be randomly, no need net
     genoms.calculateRatingForAll(pNet, &trainingData);
 
-    constexpr int nMaxGenerations = 500;
-    constexpr float nConditionRatingStop = 0.1f;
+    constexpr int nMaxGenerations = 1500;
+    constexpr float nConditionRatingStop = 2f;
     int n = 0;
     while (genoms.getBetterRating() > nConditionRatingStop && n < nMaxGenerations) {
         ++n;
@@ -101,6 +102,16 @@ int main(int argc, char *argv[]) {
         ;
         std::cout << "calc avarage time: " << pNet->getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
     }
+
+    const std::vector<float> &vBetterGenom = genoms.list()[0].getGenom();
+    
+    std::ofstream file;
+    file.open("best_genom.txt", std::ofstream::out | std::ofstream::app);
+    for (int i=0; i < vBetterGenom.size(); ++i) {
+        file << vBetterGenom[i] << " ";
+    }
+    file << std::endl;
+    file.close();
 
     std::cout << "calc avarage time: " << pNet->getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
 	return 0;

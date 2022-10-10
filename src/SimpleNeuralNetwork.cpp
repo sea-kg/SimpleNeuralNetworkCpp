@@ -154,11 +154,33 @@ void SimpleNeuralNetwork::setGenom(const std::vector<float> &vWeights) {
 }
 
 void SimpleNeuralNetwork::mutateGenom() {
-    int nCountOfMutations = std::rand() % m_vWeights.size();
-    for (int i = 0; i < nCountOfMutations; i++) {
-        int n = std::rand() % m_vWeights.size();
-        m_vWeights[n] = this->randomWeight();
+    int nTypeOfMutation = std::rand() % 2;
+    if (nTypeOfMutation == 0) {
+        // light mutation
+        int nCountOfMutations = std::rand() % m_vWeights.size();
+        while (nCountOfMutations < 5) {
+            // no mutation - it's not a option
+            nCountOfMutations = std::rand() % m_vWeights.size();
+        }
+        for (int i = 0; i < nCountOfMutations; i++) {
+            int n = std::rand() % m_vWeights.size();
+            float nSign = float((std::rand() % 2) - 1);
+            // change only of 1% of genom
+            m_vWeights[n] = m_vWeights[n] + nSign * m_vWeights[n] * 0.01f;
+        }
+    } else {
+        // hard mutation
+        int nCountOfMutations = std::rand() % m_vWeights.size();
+        while (nCountOfMutations < 5) {
+            // no mutation - it's not a option
+            nCountOfMutations = std::rand() % m_vWeights.size();
+        }
+        for (int i = 0; i < nCountOfMutations; i++) {
+            int n = std::rand() % m_vWeights.size();
+            m_vWeights[n] = this->randomWeight();
+        }
     }
+    
 }
 
 void SimpleNeuralNetwork::mixGenom(const std::vector<float> &vWeights) {
@@ -305,7 +327,7 @@ void SimpleNeuralGenomList::fillRandom(SimpleNeuralNetwork *pNet) {
     }
 }
 
-std::vector<SimpleNeuralGenom> &SimpleNeuralGenomList::list() {
+const std::vector<SimpleNeuralGenom> &SimpleNeuralGenomList::list() const {
     return m_vGenoms;
 }
 

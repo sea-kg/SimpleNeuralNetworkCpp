@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     genoms.fillRandom(pNet); // TODO fill can be randomly, no need net
     genoms.calculateRatingForAll(pNet, &trainingData);
 
-    constexpr int nMaxGenerations = 1500;
+    constexpr int nMaxGenerations = 5000;
     constexpr float nConditionRatingStop = 2.0f;
     int n = 0;
     while (genoms.getBetterRating() > nConditionRatingStop && n < nMaxGenerations) {

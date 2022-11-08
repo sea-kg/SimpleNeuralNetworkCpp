@@ -15,6 +15,7 @@ add_executable(
     ${PROJECT_NAME} 
     "${PROJECT_SOURCE_DIR}/src/main.cpp"
     "${PROJECT_SOURCE_DIR}/src/SimpleNeuralNetwork.cpp"
+    "${PROJECT_SOURCE_DIR}/src/KiobBot.cpp"
 )
 
 # enable testing functionality
@@ -24,4 +25,5 @@ add_subdirectory(tests)
 # examples
 add_subdirectory(examples/sum_numbers)
 add_subdirectory(examples/car_learning)
+add_subdirectory(examples/kiobbot_sin)
  

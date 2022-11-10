@@ -84,7 +84,7 @@ float KiobBotParticle::calcK(KiobBotParticle &part) {
     float nK = nX0 * nX1 *  + nY0 * nY1;
 
     float nDistance = this->distance(part);
-    return nK; /// * (1.0f / (nDistance + 1.0f));
+    return (1.0f / (nDistance + 1.0f));
 }
 
 // float KiobBotParticle::calcSignal(KiobBotParticle &part) {

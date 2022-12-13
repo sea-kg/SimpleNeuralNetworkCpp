@@ -115,6 +115,62 @@ bool YPos::isInsideRect(const YPos& topLeft, const YPos& bottomRight) const {
 }
 
 // ---------------------------------------------------------------------
+// YLine
+
+YLine::YLine() {
+
+}
+
+YLine::YLine(YPos p0, YPos p1) {
+    m_p0 = p0;
+    m_p1 = p1;
+}
+
+YPos YLine::p0() const {
+    return m_p0;
+}
+
+YPos YLine::p1() const {
+    return m_p1;
+}
+
+void YLine::update(YPos p0, YPos p1) {
+    m_p0 = p0;
+    m_p1 = p1;
+}
+
+void YLine::set0(YPos p0) {
+    m_p0 = p0;
+}
+
+void YLine::set1(YPos p1) {
+    m_p1 = p1;
+}
+
+float YLine::getLength() const {
+    float x21 = m_p1.x() - m_p0.x();
+    float y21 = m_p0.y() - m_p1.y();
+    return std::sqrt(x21*x21 + y21*y21);    
+}
+
+YPos YLine::findIntersectStraightLines(const YLine &line) const {
+    // https://www.cyberforum.ru/cpp-beginners/thread2015192.html
+    float a1 = m_p0.y() - m_p1.y();
+    float b1 = m_p1.x() - m_p0.x();
+    float c1 = m_p0.x() * m_p1.y() - m_p1.x() * m_p0.y();
+    float a2 = line.p0().y() - line.p1().y();
+    float b2 = line.p1().x() - line.p0().x();
+    float c2 = line.p0().x() * line.p1().y() - line.p1().x() * line.p0().y();
+    if ((a1 / a2) == (b1 / b2)) {
+        return YPos(0, 0); // TODO lines is parallel
+    }
+    float det = a1 * b2 - a2 * b1;
+    float x = (b1 * c2 - b2 * c1) / det;
+    float y = (a2 * c1 - a1 * c2) / det;
+    return YPos(x, y);
+}
+
+// ---------------------------------------------------------------------
 // YKeyboard
 
 YKeyboard::YKeyboard() {
@@ -545,9 +601,10 @@ int CarSimulator::start() {
 //    return (s11*s12 <= 0) && (s21*s22 <=0);
 // }
 
+
+
 void CarSimulator::generateTrack() {
 
-    
     m_vTrackPosints.push_back(YPos(100, 260));
     m_vTrackPosints.push_back(YPos(100, 160));
     m_vTrackPosints.push_back(YPos(500, 100));
@@ -560,25 +617,83 @@ void CarSimulator::generateTrack() {
     m_vTrackPosints.push_back(YPos(550,360));
     m_vTrackPosints.push_back(YPos(250,600));
 
-    
     std::cout << m_vTrackPosints.size() << std::endl;
     for (int i = 0; i < m_vTrackPosints.size(); i++) {
         int n_next = (i + 1) % m_vTrackPosints.size();
         YPos p0 = m_vTrackPosints[i];
         YPos p1 = m_vTrackPosints[n_next];
+        
+        YLine lineTrack(p0, p1);
+
+        float x21 = p1.x() - p0.x();
+        float y21 = p1.y() - p0.y();
+        float len = lineTrack.getLength();
+        float distance = 5.0;
+        
+        float k = distance / len;
+
+        float dx = x21 * k;
+        float dy = y21 * k;
+
+        float angle = -PI/2;
+        float dx3 = distance * (dx * std::cos(angle) - dy * std::sin(angle));
+        float dy3 = distance * (dx * std::sin(angle) + dy * std::cos(angle));
+        YPos d3(dx3, dy3);
+
+        angle = PI/2;
+        float dx4 = distance * (dx * std::cos(angle) - dy * std::sin(angle));
+        float dy4 = distance * (dx * std::sin(angle) + dy * std::cos(angle));
+        YPos d4(dx4, dy4);
+        
+        std::cout
+            << "len = " << len
+            << std::endl;
+
+        m_vTrackLeftLines.push_back(YLine(p0 + d3, p1 + d3));
+        m_vTrackRightLines.push_back(YLine(p0 + d4, p1 + d4));
+
+        // m_pRenderWindow->addObject(new RenderLine(
+        //     YPos(p0.x(), p0.y()),
+        //     YPos(p1.x(), p1.y()),
+        //     RenderColor(255,255,255,255)
+        // ));
+    }
+
+    for (int i = 0; i < m_vTrackLeftLines.size(); i++) {
+        int n_next = (i + 1) % m_vTrackLeftLines.size();
+        YLine line0 = m_vTrackLeftLines[i];
+        YLine line1 = m_vTrackLeftLines[n_next];
+        YPos p = line0.findIntersectStraightLines(line1);
+        m_vTrackLeftLines[i].set1(p);
+        m_vTrackLeftLines[n_next].set0(p);
+    }
+
+    for (int i = 0; i < m_vTrackRightLines.size(); i++) {
+        int n_next = (i + 1) % m_vTrackRightLines.size();
+        YLine line0 = m_vTrackRightLines[i];
+        YLine line1 = m_vTrackRightLines[n_next];
+        YPos p = line0.findIntersectStraightLines(line1);
+        m_vTrackRightLines[i].set1(p);
+        m_vTrackRightLines[n_next].set0(p);
+    }
+    
+    for (int i = 0; i < m_vTrackLeftLines.size(); i++) {
+        YLine lineLeft = m_vTrackLeftLines[i];
         m_pRenderWindow->addObject(new RenderLine(
-            YPos(p0.x() - 10, p0.y() - 10),
-            YPos(p1.x() - 10, p1.y() - 10),
-            RenderColor(255,255,255,255)
+            lineLeft.p0(),
+            lineLeft.p1(),
+            RenderColor(255,100,100,100)
         ));
+
+        YLine lineRight = m_vTrackRightLines[i];
         m_pRenderWindow->addObject(new RenderLine(
-            YPos(p0.x() + 10, p0.y() + 10),
-            YPos(p1.x() + 10, p1.y() + 10),
-            RenderColor(255,255,255,255)
+            lineRight.p0(),
+            lineRight.p1(),
+            RenderColor(100,100,255,255)
         ));
     }
-}
 
+}
 
 void CarSimulator::startFpsCounting() {
     m_nFpsNumberOfFrames = 0;

@@ -59,6 +59,23 @@ class YPos {
         int m_nX, m_nY;
 };
 
+class YLine {
+    public:
+        YLine();
+        YLine(YPos p0, YPos p1);
+        YPos p0() const;
+        YPos p1() const;
+        void update(YPos p0, YPos p1);
+        void set0(YPos p0);
+        void set1(YPos p1);
+        YPos findIntersectStraightLines(const YLine &line) const;
+        float getLength() const;
+
+    private:
+        YPos m_p0;
+        YPos m_p1;
+};
+
 class YKeyboard {
 
     public:
@@ -221,6 +238,9 @@ class CarSimulator {
 
 
         std::vector<YPos> m_vTrackPosints;
+        std::vector<YLine> m_vTrackLeftLines;
+        std::vector<YLine> m_vTrackRightLines;
+        
 
 };
 

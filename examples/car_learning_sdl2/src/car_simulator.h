@@ -171,6 +171,27 @@ class RenderLine : public RenderObject {
         RenderColor m_color;
 };
 
+class RenderCar : public RenderObject {
+
+    public:
+        RenderCar(
+            const YPos &p0,
+            const RenderColor &color,
+            int nPositionZ = 0
+        );
+        virtual void modify(const CarSimulatorState& state) override;
+        virtual bool canDraw(const CarSimulatorState& state) override;
+        virtual void draw(SDL_Renderer* renderer) override;
+        void setLinearVelocity(float nLinearVelocity);
+    private:
+        float m_nLinearVelocity;
+        YPos m_top;
+        YLine m_lineLeft;
+        YLine m_lineRight;
+        YLine m_lineBottom;
+        RenderColor m_color;
+};
+
 class RenderWindow {
     public:
         RenderWindow(const std::string &sTitle, int p_w, int p_h);
@@ -224,6 +245,7 @@ class CarSimulator {
         YPos getRandomTrackPoint();
 
         RenderWindow *m_pRenderWindow;
+        RenderCar *m_pRenderCar;
         std::string m_sWindowName;
         CarSimulatorState *m_pCarSimulatorState;
 

@@ -436,6 +436,68 @@ void RenderLine::updateAbsoluteCoords(const YPos &p1, const YPos &p2) {
     m_startCoord2 = p2;
 }
 
+
+// ---------------------------------------------------------------------
+// RenderCar
+
+RenderCar::RenderCar(const YPos &p0, const RenderColor &color, int nPositionZ) 
+: RenderObject(nPositionZ), m_color(color) {
+    m_nLinearVelocity = 0.0f;
+    // m_coord1 = p0;
+    m_top = p0;
+    m_lineLeft = YLine(
+        YPos(p0.x() - 5, p0.y() + 15),
+        YPos(p0.x(), p0.y())
+    );
+    m_lineRight = YLine(
+        YPos(p0.x() + 5, p0.y() + 15),
+        YPos(p0.x(), p0.y())
+    );
+    m_lineBottom = YLine(
+        YPos(p0.x() - 5, p0.y() + 15),
+        YPos(p0.x() + 5, p0.y() + 15)
+    );
+}
+
+void RenderCar::modify(const CarSimulatorState& state) {
+    // m_coord1 = m_startCoord1 - state.getCoordLeftTop();
+    // m_coord2 = m_startCoord2 - state.getCoordLeftTop() ;
+
+    if (m_nLinearVelocity != 0) {
+        if (m_nLinearVelocity > 0) {
+            int step = 1 * m_nLinearVelocity;
+            m_top.setY(m_top.y() - step);
+            m_lineLeft.set1(m_top);
+        }
+
+        m_nLinearVelocity = m_nLinearVelocity * 0.99;
+        if (m_nLinearVelocity < 0.01) {
+            m_nLinearVelocity = 0.0f;
+        }
+        std::cout << m_nLinearVelocity << std::endl;
+    }
+
+}
+
+bool RenderCar::canDraw(const CarSimulatorState& state) {
+    return true;
+    // return
+    //     m_coord1.isInsideRect(state.getWindowRect())
+    //     || m_coord2.isInsideRect(state.getWindowRect())
+    // ;
+}
+
+void RenderCar::setLinearVelocity(float nLinearVelocity) {
+    m_nLinearVelocity = nLinearVelocity;
+}
+
+void RenderCar::draw(SDL_Renderer* renderer) {
+    m_color.changeRenderColor(renderer);
+    SDL_RenderDrawLine(renderer, m_lineLeft.p0().x(), m_lineLeft.p0().y(), m_lineLeft.p1().x(), m_lineLeft.p1().y());
+    SDL_RenderDrawLine(renderer, m_lineRight.p0().x(), m_lineRight.p0().y(), m_lineRight.p1().x(), m_lineRight.p1().y());
+    SDL_RenderDrawLine(renderer, m_lineBottom.p0().x(), m_lineBottom.p0().y(), m_lineBottom.p1().x(), m_lineBottom.p1().y());
+}
+
 // ---------------------------------------------------------------------
 // RenderWindow
 
@@ -508,6 +570,7 @@ CarSimulator::CarSimulator() {
     m_nWindowWidth = 1280;
     m_nWindowHeight = 720;
     m_pRenderWindow = nullptr;
+    m_pRenderCar = nullptr;
 }
 
 bool CarSimulator::initSDL2() {
@@ -579,30 +642,6 @@ int CarSimulator::start() {
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// https://www.cyberforum.ru/cpp-beginners/thread337603.html
-// int square(YPos a, YPos b, YPos c) {
-//    return (a.x() - c.x()) * (b.y() - c.y()) + (b.x() - c.x())*(c.y()-a.y());
-// }
-
-// bool intersect1 (int a, int b, int c, int d)  {
-//     return std::max(a, b) >= std::min(c, d) && std::max(c, d) >= std::min(a, b);
-// }
-
-// bool intersect(YPos a, YPos b, YPos c, YPos d) {
-//    int s11 = square(a, b, c);
-//    int s12 = square(a, b, d);
-//    int s21 = square(c, d, a);
-//    int s22 = square(c, d, b);
-   
-//    if (s11 == 0 && s12 == 0 && s21 == 0 && s22 == 0) {
-//        return intersect1(a.x(), b.x(), c.x(), d.x()) && intersect1(a.y(), b.y(), c.y(), d.y());
-//    }
-//    return (s11*s12 <= 0) && (s21*s22 <=0);
-// }
-
-
-
 void CarSimulator::generateTrack() {
 
     m_vTrackPosints.push_back(YPos(100, 260));
@@ -616,6 +655,15 @@ void CarSimulator::generateTrack() {
     m_vTrackPosints.push_back(YPos(950, 600));
     m_vTrackPosints.push_back(YPos(550,360));
     m_vTrackPosints.push_back(YPos(250,600));
+
+
+    // render car
+    m_pRenderCar = new RenderCar(
+        m_vTrackPosints[0],
+        RenderColor(255,255,255,255)
+    );
+    m_pRenderWindow->addObject(m_pRenderCar);
+    m_pRenderCar->setLinearVelocity(2.0);
 
     std::cout << m_vTrackPosints.size() << std::endl;
     for (int i = 0; i < m_vTrackPosints.size(); i++) {

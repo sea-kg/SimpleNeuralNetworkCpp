@@ -17,13 +17,29 @@ struct AnimFileBone {
     float bone_scale_in_all_directions[3];
 };
 
+struct AnimFileAnimationFrameBone {
+    unsigned char flag;
+    unsigned short translation_of_the_bone[3];
+    short rotation_quaternion[4];
+    unsigned short bone_scale[3];
+};
+
+struct AnimFileAnimationFrames {
+    // Flag (unsigned char), each 8 bits of which determine if the current frame should store new translation, scale or rotation components for the bone. 
+    // If these components have not changed since the previous frame, new data is not stored. Instead, 
+    // data from the previous frame is used, which maximizes the efficiency of memory usage.
+
+    AnimFileAnimationFrameBone *bones;
+
+};
+
 struct AnimFileAnimation {
     // header
     int name_of_animation_length;
     char *name_of_animation;
 
     int number_of_animation_bones;
-    short indices_of_the_bones_taking_part_in_the_animation;
+    short* indices_of_the_bones_taking_part_in_the_animation;
 
     float translation_bounding_box_minimum_along[3];
     float translation_bounding_box_size[3];
@@ -35,6 +51,7 @@ struct AnimFileAnimation {
     // Flag (unsigned char), each 8 bits of which determine if the animations should store translation, scale or rotation components for bones taking part in the animations.
 
     int number_of_animation_frames;
+    AnimFileAnimationFrames *animation_frames;
 };
 
 struct AnimFile {
@@ -48,8 +65,10 @@ struct AnimFile {
     int32_t number_of_bones_in_skinned_animation;
     AnimFileBone** bones;
     int32_t number_of_animations;
-    AnimFileAnimation** animations;
+    AnimFileAnimation* animations;
     int32_t file_format_identifier_again;
+
+    int32_t file_format_identifier_again2;
 };
 
 

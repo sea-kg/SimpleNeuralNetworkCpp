@@ -26,6 +26,7 @@ SOFTWARE.
 #define __SIMPLE_NEURAL_NETWORK_H__
 
 #include <vector>
+#include <string>
 
 class SimpleNeuralNetwork {
     public:
@@ -36,6 +37,8 @@ class SimpleNeuralNetwork {
         void setGenom(const std::vector<float> &vWeights);
         void mutateGenom();
         void mixGenom(const std::vector<float> &vWeights);
+
+        void exportToCppFunction(const std::string &sFilename, const std::string &sFuncname);
 
     private:
         float randomWeight();

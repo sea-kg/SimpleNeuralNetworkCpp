@@ -104,9 +104,9 @@ int main(int argc, char *argv[]) {
     }
 
     const std::vector<float> &vBetterGenom = genoms.list()[0].getGenom();
-    
+
     std::ofstream file;
-    file.open("best_genom.txt", std::ofstream::out | std::ofstream::app);
+    file.open("best_genom.txt", std::ofstream::out);
     for (int i=0; i < vBetterGenom.size(); ++i) {
         file << vBetterGenom[i] << " ";
     }

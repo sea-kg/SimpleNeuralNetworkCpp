@@ -29,6 +29,7 @@ SOFTWARE.
 #include <chrono>
 
 #include "SimpleNeuralNetwork.h"
+#include "test_sum_numbers_func.h"
 
 void initTrainingData(SimpleNeuralTrainingItemList &trainingData, int nTrainingData) {
     // init training data
@@ -42,11 +43,23 @@ void initTrainingData(SimpleNeuralTrainingItemList &trainingData, int nTrainingD
 int main(int argc, char *argv[]) {
 	std::srand(std::time(nullptr));
 
+    // test export to c++
+    for (int i = 0; i < 10; i++) {
+        float x = (std::rand() % 200) - 100;
+        float y = (std::rand() % 200) - 100;
+        float res;
+        auto start = std::chrono::steady_clock::now();
+        sum_numbers(x, y, res);
+        auto end = std::chrono::steady_clock::now();
+        long long m_nCalcSumMs = m_nCalcSumMs + std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        std::cout << x << " + " << y << " = " << res << ", expected (" << int(x+y) << ") " << m_nCalcSumMs << std::endl;
+    }
+
     constexpr int nNumberOfIn = 2;
     constexpr int nNumberOfOut = 1;
 
     SimpleNeuralTrainingItemList trainingData(nNumberOfIn,nNumberOfOut);
-    
+
     constexpr size_t nTrainingDataSize = 1000;
     initTrainingData(trainingData, nTrainingDataSize);
 
@@ -64,7 +77,7 @@ int main(int argc, char *argv[]) {
     genoms.fillRandom(pNet); // TODO fill can be randomly, no need net
     genoms.calculateRatingForAll(pNet, &trainingData);
 
-    constexpr int nMaxGenerations = 100;    
+    constexpr int nMaxGenerations = 100;
     constexpr float nConditionRatingStop = 0.1f;
     int n = 0;
     while (genoms.getBetterRating() > nConditionRatingStop && n < nMaxGenerations) {
@@ -97,6 +110,8 @@ int main(int argc, char *argv[]) {
         float y = (std::rand() % 200) - 100;
         std::cout << x << " + " << y << " = " << pNet->calc({x,y})[0] << ", expected (" << int(x+y) << ") " << std::endl;
     }
+
+    pNet->exportToCppFunction("examples/sum_numbers/src/test_sum_numbers_func.h", "sum_numbers");
 
     std::cout << "calc avarage time: " << pNet->getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
     // 73007f060c20ea28d5d82db7ef2b0436d132d5b8: ~22ms

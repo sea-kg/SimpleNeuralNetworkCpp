@@ -24,4 +24,4 @@ add_subdirectory(tests)
 # examples
 add_subdirectory(examples/sum_numbers)
 add_subdirectory(examples/car_learning)
- 
+add_subdirectory(examples/mesh_calc_tangents)

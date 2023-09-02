@@ -9,7 +9,8 @@ Features:
 
 
 Sample (teach neural network for sum):
-```
+
+```cpp
 #include <stdint.h>
 #include <iostream>
 #include <ctime>

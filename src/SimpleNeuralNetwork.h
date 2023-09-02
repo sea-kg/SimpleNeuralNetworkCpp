@@ -38,7 +38,7 @@ class SimpleNeuralNetwork {
         void mutateGenom();
         void mixGenom(const std::vector<float> &vWeights);
 
-        void exportToCppFunction(const std::string &sFilename, const std::string &sFuncname);
+        void exportToCppFunction(const std::string &sFilename, const std::string &sFuncname, const std::string &sTop = "");
 
     private:
         float randomWeight();

@@ -51,7 +51,7 @@ SimpleNeuralNetworkMeshPoint SimpleNeuralNetworkMeshPoint::getMiddle(const Simpl
         (this->getX() + p.getX()) / 2.0,
         (this->getY() + p.getY()) / 2.0,
         (this->getZ() + p.getZ()) / 2.0
-    );;
+    );
 }
 
 void squashOneRandomTriangle(std::vector<SimpleNeuralNetworkMeshTriangle> &vTriangles, const SimpleNeuralNetworkMeshPoint &main_p) {
@@ -98,8 +98,47 @@ void squashOneRandomTriangle(std::vector<SimpleNeuralNetworkMeshTriangle> &vTria
         return;
     }
 
+    for (int i = 0; i < vTriangles.size(); i++) {
+        if (vTriangles[i].p0.isEqual(main_p) && vTriangles[i].p1.isEqual(t0.p1)) {
+            triangle_id1 = i;
+            break;
+        }
+    }
+
+    if (triangle_id1 != -1) {
+        // std::cout << "squash (p1): " << triangle_id0 << " && " << triangle_id1 << std::endl;
+        SimpleNeuralNetworkMeshTriangle t1 = vTriangles[triangle_id1];
+        vTriangles.erase(std::next(vTriangles.begin(), triangle_id1));
+        SimpleNeuralNetworkMeshTriangle t2;
+        t2.p0 = main_p;
+        t2.p1 = t1.p2;
+        t2.p2 = t0.p2;
+        vTriangles.push_back(t2);
+        return;
+    }
+
+    for (int i = 0; i < vTriangles.size(); i++) {
+        if (vTriangles[i].p0.isEqual(main_p) && vTriangles[i].p2.isEqual(t0.p2)) {
+            triangle_id1 = i;
+            break;
+        }
+    }
+
+    if (triangle_id1 != -1) {
+        // std::cout << "squash (p1): " << triangle_id0 << " && " << triangle_id1 << std::endl;
+        SimpleNeuralNetworkMeshTriangle t1 = vTriangles[triangle_id1];
+        vTriangles.erase(std::next(vTriangles.begin(), triangle_id1));
+        SimpleNeuralNetworkMeshTriangle t2;
+        t2.p0 = main_p;
+        t2.p1 = t1.p1;
+        t2.p2 = t0.p1;
+        vTriangles.push_back(t2);
+        return;
+    }
+
     if (triangle_id1 == -1) {
-        std::cout << "Could not squash" << std::endl;
+        vTriangles.push_back(t0);
+        std::cout << "Could not squash " << vTriangles.size() << std::endl;
     }
 }
 
@@ -143,12 +182,16 @@ std::vector<SimpleNeuralNetworkMeshPoint> normalizeNumPoints(const std::vector<S
         squashOneRandomTriangle(vTriangles, main_p);
         nSafeCicles++;
         if (nSafeCicles > 100) {
+            std::cout << "nSafeCicles break;" << std::endl;
             break;
         }
     }
+
     if (vTriangles.size() != 6) {
-        std::cout << "Wrong nimber of triangles" << std::endl;
-        exit(1);
+        std::cout << "Wrong number of triangles" << std::endl;
+    }
+    while (vTriangles.size() < 6) {
+        vTriangles.push_back(vTriangles.back());
     }
 
     std::vector<SimpleNeuralNetworkMeshPoint> vRet;
@@ -162,8 +205,94 @@ std::vector<SimpleNeuralNetworkMeshPoint> normalizeNumPoints(const std::vector<S
     return vRet;
 }
 
+std::vector<float> toVector(const std::vector<SimpleNeuralNetworkMeshPoint> &vPoints) {
+    std::vector<float> vRet;
+    for (int i = 0; i < vPoints.size(); i++) {
+        vRet.push_back(vPoints[i].getX());
+        vRet.push_back(vPoints[i].getY());
+        vRet.push_back(vPoints[i].getZ());
+    }
+    return vRet;
+}
 
 // in 57 values, output 4 values
+
+void calcTangentByPointsVIn(
+    const std::vector<float> &vIn,
+    float &out0,
+    float &out1,
+    float &out2,
+    float &out3
+) {
+    if (vIn.size() != 57) {
+        std::cout << "Wrong size for vIn" << std::endl;
+        return;
+    }
+    calcTangentByPoints(
+        vIn[0],
+        vIn[1],
+        vIn[2],
+        vIn[3],
+        vIn[4],
+        vIn[5],
+        vIn[6],
+        vIn[7],
+        vIn[8],
+        vIn[9],
+        vIn[10],
+        vIn[11],
+        vIn[12],
+        vIn[13],
+        vIn[14],
+        vIn[15],
+        vIn[16],
+        vIn[17],
+        vIn[18],
+        vIn[19],
+        vIn[20],
+        vIn[21],
+        vIn[22],
+        vIn[23],
+        vIn[24],
+        vIn[25],
+        vIn[26],
+        vIn[27],
+        vIn[28],
+        vIn[29],
+        vIn[30],
+        vIn[31],
+        vIn[32],
+        vIn[33],
+        vIn[34],
+        vIn[35],
+        vIn[36],
+        vIn[37],
+        vIn[38],
+        vIn[39],
+        vIn[40],
+        vIn[41],
+        vIn[42],
+        vIn[43],
+        vIn[44],
+        vIn[45],
+        vIn[46],
+        vIn[47],
+        vIn[48],
+        vIn[49],
+        vIn[50],
+        vIn[51],
+        vIn[52],
+        vIn[53],
+        vIn[54],
+        vIn[55],
+        vIn[56],
+        out0,
+        out1,
+        out2,
+        out3
+   );
+}
+
 void calcTangentByPoints(
     const float &in0, // x
     const float &in1, // y

@@ -198,9 +198,41 @@ float SimpleNeuralNetwork::randomWeight() {
     return float((std::rand() % 200) - 100) / 100.0f;
 }
 
-void SimpleNeuralNetwork::exportToCppFunction(const std::string &sFilename, const std::string &sFuncname) {
+void SimpleNeuralNetwork::exportToCppFunction(const std::string &sFilename, const std::string &sFuncname, const std::string &sTop) {
     std::ofstream file;
     file.open(sFilename, std::ofstream::out);
+    file << sTop << std::endl;
+    file << std::endl;
+    file << "// in " << m_nInputSize << " values, output " << m_nOutputSize << " values" << std::endl;
+    file << std::endl;
+    file << "void " << sFuncname << "VIn(" << std::endl;
+    file << "    const std::vector<float> &vIn," << std::endl;
+    for (int i = 0; i < m_nOutputSize; i++) {
+        file << "    float &out" << i;
+        if (i != m_nOutputSize-1) {
+            file << ",";
+        }
+        file << std::endl;
+    }
+    file << ") {" << std::endl;
+    file << "    if (vIn.size() != " << m_nInputSize << ") {" << std::endl;
+    file << "        std::cout << \"Wrong size for vIn\" << std::endl;" << std::endl;
+    file << "        return;" << std::endl;
+    file << "    }" << std::endl;
+    file << "    " << sFuncname << "(" << std::endl;
+    for (int i = 0; i < m_nInputSize; i++) {
+        file << "        vIn[" << i << "]," << std::endl;
+    }
+    for (int i = 0; i < m_nOutputSize; i++) {
+        file << "        out" << i;
+        if (i != m_nOutputSize-1) {
+            file << ",";
+        }
+        file << std::endl;
+    }
+    file << "   );" << std::endl;
+    file << "}" << std::endl;
+    file << std::endl;
     file << "void " << sFuncname << "(" << std::endl;
     for (int i = 0; i < m_nInputSize; i++) {
         file << "    const float &in" << i << "," << std::endl;
@@ -208,7 +240,7 @@ void SimpleNeuralNetwork::exportToCppFunction(const std::string &sFilename, cons
     for (int i = 0; i < m_nOutputSize; i++) {
         file << "    float &out" << i;
         if (i != m_nOutputSize-1) {
-            file << ", ";
+            file << ",";
         }
         file << std::endl;
     }

@@ -92,14 +92,9 @@ void initTrainingData(SimpleNeuralTrainingItemList &trainingData) {
             std::cout << "point " << i << " -> found points " << vPointsIn.size() << " norm " << vPointsNormIn.size() << std::endl;
         }
 
-        std::vector<float> vIn;
-        std::vector<float> vOut;
+        std::vector<float> vIn = toVector(vPointsNormIn);
 
-        for (int i0 = 0; i0 < vPointsNormIn.size(); i0++) {
-            vIn.push_back(vPointsNormIn[i0].getX());
-            vIn.push_back(vPointsNormIn[i0].getY());
-            vIn.push_back(vPointsNormIn[i0].getZ());
-        }
+        std::vector<float> vOut;
         vOut.push_back(vTangents[i].tangent_x);
         vOut.push_back(vTangents[i].tangent_y);
         vOut.push_back(vTangents[i].tangent_z);
@@ -161,7 +156,11 @@ int main(int argc, char *argv[]) {
         std::cout << "calc avarage time: " << pNet->getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
 
         pNet->setGenom(genoms.getBetterGenom().getGenom());
-        pNet->exportToCppFunction("CalcTangentSimpleNeuralNetwork.cpp", "calcTangentByPoints");
+        pNet->exportToCppFunction(
+            "CalcTangentSimpleNeuralNetwork.cpp",
+            "calcTangentByPoints",
+            "// " + std::to_string(n) + " generatoins, rate " + std::to_string(genoms.getBetterGenom().getRating()) + ", training for sphere"
+        );
     }
 
     const std::vector<float> &vBetterGenom = genoms.list()[0].getGenom();

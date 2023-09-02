@@ -81,8 +81,17 @@ struct SimpleNeuralNetworkMeshTriangle {
 
 void squashOneRandomTriangle(std::vector<SimpleNeuralNetworkMeshTriangle> &vTriangles, const SimpleNeuralNetworkMeshPoint &main_p);
 std::vector<SimpleNeuralNetworkMeshPoint> normalizeNumPoints(const std::vector<SimpleNeuralNetworkMeshPoint> &vPoints);
+std::vector<float> toVector(const std::vector<SimpleNeuralNetworkMeshPoint> &vPoints);
 
 // in 57 values, output 4 values
+void calcTangentByPointsVIn(
+    const std::vector<float> &vIn,
+    float &out0, // x
+    float &out1, // y
+    float &out2, // z
+    float &out3  // w
+);
+
 void calcTangentByPoints(
     const float &in0, // x
     const float &in1, // y

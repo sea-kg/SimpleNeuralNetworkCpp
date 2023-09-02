@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(
     ${PROJECT_NAME}
     "${PROJECT_SOURCE_DIR}/src/main.cpp"
+    "${PROJECT_SOURCE_DIR}/src/CalcTangentSimpleNeuralNetwork.cpp"
     "${PROJECT_SOURCE_DIR}/../../src/SimpleNeuralNetwork.cpp"
 )
 

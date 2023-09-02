@@ -290,7 +290,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Init net... " << std::endl;
 	SimpleNeuralNetwork *pNet = new SimpleNeuralNetwork({
         trainingData.getNumberOfIn(),
-        128, 512, 64, // middle layers
+        30, 71, 8, // middle layers
         // 64, 10, 64, // middle layers
         trainingData.getNumberOfOut()
     });
@@ -301,10 +301,11 @@ int main(int argc, char *argv[]) {
     constexpr int nMixSpecimens = 40;
     SimpleNeuralGenomList genoms(nBetterSpecimens, nMutateSpecimens, nMixSpecimens);
     genoms.fillRandom(pNet); // TODO fill can be randomly, no need net
+    std::cout << "First calc... " << std::endl;
     genoms.calculateRatingForAll(pNet, &trainingData);
 
     constexpr int nMaxGenerations = 5000;
-    constexpr float nConditionRatingStop = 2.0f;
+    constexpr float nConditionRatingStop = 0.1f;
     int n = 0;
     std::cout << "Start learning... " << std::endl;
     while (genoms.getBetterRating() > nConditionRatingStop && n < nMaxGenerations) {
@@ -327,17 +328,12 @@ int main(int argc, char *argv[]) {
             << "ms" << std::endl
         ;
         std::cout << "calc avarage time: " << pNet->getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
+
+        pNet->setGenom(genoms.getBetterGenom().getGenom());
+        pNet->exportToCppFunction("CalcTangentSimpleNeuralNetwork.cpp", "calcTangentByPoints");
     }
 
     const std::vector<float> &vBetterGenom = genoms.list()[0].getGenom();
-
-    std::ofstream file;
-    file.open("best_genom_128_512_64.txt", std::ofstream::out);
-    for (int i=0; i < vBetterGenom.size(); ++i) {
-        file << vBetterGenom[i] << " ";
-    }
-    file << std::endl;
-    file.close();
 
     std::cout << "calc avarage time: " << pNet->getCalcAvarageTimeInNanoseconds() << "ns" << std::endl;
 	return 0;

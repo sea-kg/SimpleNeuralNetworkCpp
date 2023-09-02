@@ -38,3 +38,5 @@
 *.app
 
 tmp
+
+/CalcTangentSimpleNeuralNetwork.cpp
